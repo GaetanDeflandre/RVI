@@ -11,6 +11,8 @@ var texture;
 var modelview;
 var projection;
 
+var angle;
+
 /**
  * Init the gl context from the canvas, and some gl settings
  */
@@ -158,6 +160,12 @@ function initTexCoord(){
  */
 function updateData(){
 
+  angle += 0.01;
+
+  modelview.setIdentity();
+  modelview.translate(0,0,-4);
+  modelview.rotateX(angle);
+
 }
 
 /**
@@ -172,8 +180,13 @@ function drawScene(){
   var texCoordLocation = gl.getAttribLocation(programShader, 'texCoord');
   var textureLocation = gl.getUniformLocation(programShader, 'texture0');
 
+  var modelviewLocation = gl.getUniformLocation(programShader, 'modelview');
+  var projectionLocation = gl.getUniformLocation(programShader, 'projection');
+
   // set up uniform
   gl.uniform1i(textureLocation, 0);
+  gl.uniformMatrix4fv(modelviewLocation, gl.FALSE, modelview.fv);
+  gl.uniformMatrix4fv(projectionLocation, gl.FALSE, projection.fv);
 
   // draw geometry
   gl.enableVertexAttribArray(vertexLocation);
@@ -210,7 +223,8 @@ function loop(){
 /**
  * Inisialize vertice, color, texture coord, texture and matrix
  */
-void initData(void){
+function initData(){
+
   vertexBuffer = initVertex();
   //colorBuffer = initColor();
   texCoordBuffer = initTexCoord();
@@ -220,6 +234,14 @@ void initData(void){
   // Question 9
   // init les mat4
   // --------------------------------------------------------------------------
+
+  modelview = new Mat4();
+  projection = new Mat4();
+
+  projection.setFrustum(-0.1,0.1,-0.1,0.1,0.1,1000);
+
+  angle = 0.0;
+
 }
 
 
