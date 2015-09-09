@@ -3,10 +3,11 @@ window.addEventListener('load', main, false);
 var gl; // will contain the webgl context
 var programShader; // video360 program shader
 
-var vertexBuffer; // contain the vertice
-var colorBuffer; // contain each vertiex color
-var texCoordBuffer; // contain the texture cordinate
-var texture;
+var vertexBuffer; // contain the vertices
+var elementBuffer; // contain the indice of each vertex
+var colorBuffer; // contain each vertex color
+var texCoordBuffer; // contain the texture cordinates
+var texture; // the texture image
 
 var modelview;
 var projection;
@@ -88,7 +89,7 @@ function createProgram(id){
 
 
 /**
- * return the buffer of vertice
+ * return the buffer of vertices
  */
 function initVertex(){
   var vertex = [-0.5,-0.5,0.0,
@@ -153,6 +154,32 @@ function initTexCoord(){
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoord), gl.STATIC_DRAW);
 
   return texCoordBuffer;
+}
+
+/**
+ * Initialize directly the gobal var (vertexBuffer, elementBuffer)
+ */
+function initSphere(){
+
+  var nbSlice = 20;
+  var nbStack = 20;
+
+  vertexBuffer = new Array();
+  elementBuffer = new Array();
+
+  for (var i=0; i<=nbStrack; i++){
+    for (var j=0; j<=nbSlice; j++) {
+      
+      // ----------------------------------------------------------
+      // Math.PI
+      // Voir M3DS pour la sphere
+      // ----------------------------------------------------------
+
+
+    };
+  };
+
+
 }
 
 /**
@@ -221,7 +248,7 @@ function loop(){
 
 
 /**
- * Inisialize vertice, color, texture coord, texture and matrix
+ * Inisialize vertices, color, texture coord, texture and matrix
  */
 function initData(){
 
@@ -229,11 +256,6 @@ function initData(){
   //colorBuffer = initColor();
   texCoordBuffer = initTexCoord();
   texture = initTexture("earth");
-
-  // --------------------------------------------------------------------------  
-  // Question 9
-  // init les mat4
-  // --------------------------------------------------------------------------
 
   modelview = new Mat4();
   projection = new Mat4();
