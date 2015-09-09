@@ -1,5 +1,6 @@
 window.addEventListener('load', main, false);
 
+var canvas;
 var gl; // will contain the webgl context
 var programShader; // video360 program shader
 
@@ -15,7 +16,15 @@ var projection;
 var angle;
 var nbVertex;
 
+var clickHold;
+var oldMouseX;
+var oldMouseY;
 
+
+
+// ********************************************
+// WEBGL
+// ********************************************
 
 /**
  * Init the gl context from the canvas, and some gl settings
@@ -223,11 +232,11 @@ function updateData(){
   gl.bindTexture(gl.TEXTURE_2D, texture);
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, imageData);
 
-  angle += 0.01;
+  //angle += 0.01;
 
   modelview.setIdentity();
   //modelview.translate(0,0,-4);
-  modelview.rotateY(angle);
+  //modelview.rotateY(angle);
 
 }
 
@@ -307,12 +316,52 @@ function initData(){
 }
 
 
-/** *******************************************
- * MAIN
- */
+
+// ********************************************
+// EVENT
+// ********************************************
+
+function initEvent(){
+
+  // callback for mouse events
+  canvas.addEventListener('mousedown', handleMouseDown, false);
+  canvas.addEventListener('mousemove', handleMouseMove, false);
+  canvas.addEventListener('mouseup', handleMouseUp, false);
+}
+
+function handleMouseDown(event) {
+  oldMouseX = event.layerX-canvas.offLeft;
+  oldMouseY = (canvas.height-1.0) - (event.layerY-canvas.offsetTop);
+  clickHold = true;
+}
+
+function handleMouseUp(event) {
+  clickHold = false;
+}
+
+function handleMouseMove(event) {
+  if (clickHold == null){
+    return;
+  }
+
+  if (clickHold == true) {
+    
+
+
+  }
+
+}
+
+
+
+// ********************************************
+// MAIN
+// ********************************************
+
 function main(){
   initGL();
   programShader = createProgram("video360");
   initData();
+  initEvent();
   loop();
 }
