@@ -19,6 +19,8 @@ var nbVertex;
 var clickHold;
 var oldMouseX;
 var oldMouseY;
+var mouseX;
+var mouseY;
 
 
 
@@ -238,6 +240,9 @@ function updateData(){
   //modelview.translate(0,0,-4);
   //modelview.rotateY(angle);
 
+  modelview.rotateY(moveX);
+  modelview.rotateX(moveY);
+
 }
 
 /**
@@ -327,10 +332,13 @@ function initEvent(){
   canvas.addEventListener('mousedown', handleMouseDown, false);
   canvas.addEventListener('mousemove', handleMouseMove, false);
   canvas.addEventListener('mouseup', handleMouseUp, false);
+
+  moveX = 0.0;
+  moveY = 0.0;
 }
 
 function handleMouseDown(event) {
-  oldMouseX = event.layerX-canvas.offLeft;
+  oldMouseX = event.layerX-canvas.offsetLeft;
   oldMouseY = (canvas.height-1.0) - (event.layerY-canvas.offsetTop);
   clickHold = true;
 }
@@ -346,8 +354,14 @@ function handleMouseMove(event) {
 
   if (clickHold == true) {
     
+    var curMouseX = event.layerX-canvas.offsetLeft;
+    var curMouseY = (canvas.height-1.0) - (event.layerY-canvas.offsetTop);
 
+    moveX += (curMouseX - oldMouseX) / 100;
+    moveY += (curMouseY - oldMouseY) / 100;
 
+    oldMouseX = curMouseX;
+    oldMouseY = curMouseY;
   }
 
 }
