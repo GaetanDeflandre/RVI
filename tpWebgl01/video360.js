@@ -4,7 +4,7 @@ var gl; // will contain the webgl context
 var programShader; // video360 program shader
 
 var vertexBuffer; // contain the vertices
-var elementBuffer; // contain the indice of each vertex
+var elementBuffer; // contain the index of each vertex
 var colorBuffer; // contain each vertex color
 var texCoordBuffer; // contain the texture cordinates
 var texture; // the texture image
@@ -13,6 +13,9 @@ var modelview;
 var projection;
 
 var angle;
+var nbVertex;
+
+
 
 /**
  * Init the gl context from the canvas, and some gl settings
@@ -157,28 +160,55 @@ function initTexCoord(){
 }
 
 /**
- * Initialize directly the gobal var (vertexBuffer, elementBuffer)
+ * Initialize directly the gobal var (vertexBuffer, texCoordBuffer, elementBuffer)
  */
 function initSphere(){
 
-  var nbSlice = 20;
-  var nbStack = 20;
+  var vertex = new Array();
+  var texCoord = new Array();
+  var element = new Array();
 
-  vertexBuffer = new Array();
-  elementBuffer = new Array();
+  var nbSlice = 30;
+  var nbStack = 30;
+  nbVertex = nbStack * nbSlice;
 
-  for (var i=0; i<=nbStrack; i++){
+  for (var i=0; i<=nbStack; i++){
     for (var j=0; j<=nbSlice; j++) {
       
-      // ----------------------------------------------------------
-      // Math.PI
-      // Voir M3DS pour la sphere
-      // ----------------------------------------------------------
+      var theta = (2*Math.PI*j) / (nbSlice);
+      var phi = (Math.PI*i) / (nbStack-1);
 
+      var x = Math.cos(theta) * Math.sin(phi);
+      var y = Math.cos(phi);
+      var z = Math.sin(theta) * Math.sin(phi);
+
+      vertex.push(x,y,z);
+
+      texCoord.push(1-theta/(2*Math.PI), phi/(Math.PI));
 
     };
   };
 
+  for (var i=0; i<nbVertex; i++) {
+    element.push(i+nbSlice+1);
+    element.push(i);
+    element.push(i+1);
+    element.push(i+1);
+    element.push(i+nbSlice+2);
+    element.push(i+nbSlice+1);
+  };
+
+  vertexBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,vertexBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertex), gl.STATIC_DRAW);
+
+  texCoordBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(texCoord), gl.STATIC_DRAW);
+
+  elementBuffer = gl.createBuffer();
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
+  gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(element), gl.STATIC_DRAW);
 
 }
 
@@ -187,11 +217,17 @@ function initSphere(){
  */
 function updateData(){
 
+  var imageData = document.getElementById("video360");
+
+  gl.activeTexture(gl.TEXTURE0);
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, imageData);
+
   angle += 0.01;
 
   modelview.setIdentity();
-  modelview.translate(0,0,-4);
-  modelview.rotateX(angle);
+  //modelview.translate(0,0,-4);
+  modelview.rotateY(angle);
 
 }
 
@@ -222,14 +258,16 @@ function drawScene(){
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.vertexAttribPointer(vertexLocation, 3, gl.FLOAT, gl.FALSE, 0, 0);
 
-
   gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
   gl.vertexAttribPointer(texCoordLocation, 2, gl.FLOAT, gl.FALSE, 0, 0);
 
   gl.activeTexture(gl.TEXTURE0);
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
-  gl.drawArrays(gl.TRIANGLES, 0, 3);
+  //gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, elementBuffer);
+  gl.drawElements(gl.TRIANGLES, nbVertex * 6, gl.UNSIGNED_SHORT, 0);
 
   // disable all
   gl.disableVertexAttribArray(vertexLocation);
@@ -252,10 +290,12 @@ function loop(){
  */
 function initData(){
 
-  vertexBuffer = initVertex();
+  //vertexBuffer = initVertex();
   //colorBuffer = initColor();
-  texCoordBuffer = initTexCoord();
-  texture = initTexture("earth");
+  //texCoordBuffer = initTexCoord();
+  
+  initSphere();
+  texture = initTexture("video360");
 
   modelview = new Mat4();
   projection = new Mat4();
