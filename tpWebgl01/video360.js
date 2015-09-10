@@ -1,3 +1,7 @@
+/**
+ * @author Gaetan DEFLANDRE
+ */
+
 window.addEventListener('load', main, false);
 
 var canvas;
@@ -33,7 +37,20 @@ var mouseY;
  */
 function initGL(){
 
+  var width = window.innerWidth;
+  var height = window.innerHeight;
+  var max = Math.max(width, height);
+
   canvas = document.getElementById("webglCanvas");
+
+  if(width == max){
+    canvas.width  = height - 100;
+    canvas.height = (height-100) * (3/4);
+  } else {
+    canvas.width  = width - 100;
+    canvas.height = (width-100) * (3/4);
+  }
+
   gl = canvas.getContext("webgl");
 
   if(!gl){
@@ -240,8 +257,8 @@ function updateData(){
   //modelview.translate(0,0,-4);
   //modelview.rotateY(angle);
 
+  modelview.rotateX(-moveY);
   modelview.rotateY(moveX);
-  modelview.rotateX(moveY);
 
 }
 
@@ -323,7 +340,7 @@ function initData(){
 
 
 // ********************************************
-// EVENT
+// EVENTS
 // ********************************************
 
 function initEvent(){
@@ -373,6 +390,7 @@ function handleMouseMove(event) {
 // ********************************************
 
 function main(){
+
   initGL();
   programShader = createProgram("video360");
   initData();
