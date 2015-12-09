@@ -212,6 +212,10 @@ function updateData() {
     }
   }
 
+  // Déplacement avec la souris:
+  // utiliser plane.setFromNormalAndCoplanarPoint
+
+
 }
 
 
