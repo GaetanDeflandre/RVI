@@ -24,6 +24,7 @@ var mouse = new THREE.Vector2();
 var mouseOld = new THREE.Vector2();
 var mouseDelta = new THREE.Vector2();
 var clickHold = false;
+var mouseObj;
 
 // MAIN
 // ====
@@ -68,6 +69,8 @@ function handleMouseDown(event) {
 }
 
 function handleMouseUp(event) {
+  mouseDelta.x = 0.0;
+  mouseDelta.y = 0.0;
   clickHold = false;
 }
 
@@ -81,7 +84,7 @@ function handleMouseMove(event) {
   mouseDelta.y = mouse.y - mouseOld.y;
   mouseOld.x = mouse.x;
   mouseOld.y = mouse.y;
-  console.log(mouseDelta);
+  //console.log(mouseDelta);
 }
 
 
@@ -149,6 +152,9 @@ function init() {
   // ajout de lumière dans la scène
   scene.add(pointLight);
 
+  // objet qui va contenir les variation de la souris.
+  mouseObj = new THREE.object3D();
+
   console.log("Type 'r' to reset speed");
 }
 
@@ -166,9 +172,9 @@ function updateData() {
   }
 
   if (pitchIncUpdate && !pitchDecUpdate) {
-    camera.rotateOnAxis((new THREE.Vector3(1,0,0)).normalize(),-0.005);
+    camera.rotateOnAxis((new THREE.Vector3(1,0,0)).normalize(),-0.01);
   } else if (pitchDecUpdate && !pitchIncUpdate) {
-    camera.rotateOnAxis((new THREE.Vector3(1,0,0)).normalize(), 0.005);
+    camera.rotateOnAxis((new THREE.Vector3(1,0,0)).normalize(), 0.01);
   }
 
   if (velocityIncUpdate && !velocityDecUpdate) {
@@ -186,29 +192,44 @@ function updateData() {
   // SELECTION
   // ---------
   if (clickHold){
-    ray=new THREE.Raycaster(new THREE.Vector3(0,0,10),new THREE.Vector3(0,0,-1),0,1000); // rayon d'origine (0,0,0) et de direction(0,0,-1); exprimés dans le repère du monde !
+    // rayon d'origine (0,0,0) et de direction(0,0,-1); exprimés dans le repère du monde !
+    ray=new THREE.Raycaster(new THREE.Vector3(0,0,10), new THREE.Vector3(0,0,-1),0,1000);
     // changement de repère monde vers camera
     ray.setFromCamera(mouse, camera);
-    var arrayIntersect=ray.intersectObjects(scene.children); // intersection rayon avec tous les enfants de la scène : retourne un tableau d'informations sur les objets intersectés
+    // intersection rayon avec tous les enfants de la scène :
+    //retourne un tableau d'informations sur les objets intersectés
+    var arrayIntersect=ray.intersectObjects(scene.children);
 
     // s'il y a des objets intersectés
     if (arrayIntersect.length>0) {
       // on prend le premier (intersections ordonnées de
       // la plus proche à la plus lointaine de l'origine du rayon
       var first = arrayIntersect[0];
+
+      mouseObj.position.x = mouseDelta.x;
+      mouseObj.position.y = mouseDelta.y;
+
+      console.log(mouseObj.position);
+
+      // TODO: voir pour utiliser localToWorld
+
+      //mouseObj.localToWorld(mouseObj.position);
+
       // la distance depuis l'origine
       //console.log(first.distance);
       // coordonnées du point intersecté; repère du monde !
       //console.log(first.point);
       // .object : donne le noeud (i.e. l'object3D) intersecté
+
       selected = first.object;
 
-      console.log(mouseDelta);
 
       //selected.rotation.z += 0.1;
-      selected.position.x += mouseDelta.x*10;
-      selected.position.y += mouseDelta.y*10;
+      selected.position.x += mouseDelta.x*20;
+      selected.position.y += mouseDelta.y*20;
 
+      mouseDelta.x = 0.0;
+      mouseDelta.y = 0.0;
     }
   }
 
@@ -226,7 +247,9 @@ function drawScene() {
 
 
 function loop() {
-  var raf=window.requestAnimationFrame || window.mozRequestAnimationFrame || webkitRequestAnimationFrame;
+  var raf= (window.requestAnimationFrame ||
+    window.mozRequestAnimationFrame ||
+    webkitRequestAnimationFrame);
   drawScene();
   updateData();
   raf(loop);
