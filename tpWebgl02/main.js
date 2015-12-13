@@ -22,9 +22,10 @@ var velocity = 0;
 
 var mouse = new THREE.Vector2();
 var mouseOld = new THREE.Vector2();
-var mouseDelta = new THREE.Vector2();
+var mouseDelta = new THREE.Vector3();
 var clickHold = false;
 var mouseObj;
+var depth;
 
 // MAIN
 // ====
@@ -71,6 +72,7 @@ function handleMouseDown(event) {
 function handleMouseUp(event) {
   mouseDelta.x = 0.0;
   mouseDelta.y = 0.0;
+  mouseDelta.z = 0.0;
   clickHold = false;
 }
 
@@ -86,6 +88,14 @@ function handleMouseMove(event) {
   mouseOld.y = mouse.y;
   //console.log(mouseDelta);
 }
+
+function handleMousewheel(e) {
+  if (clickHold){
+    depth += e.deltaY;
+    e.preventDefault(); // interdit la remontée de l'event
+  }
+}
+
 
 
 // INITIALIZE
@@ -104,6 +114,7 @@ function init() {
   canvas.addEventListener('mousedown', handleMouseDown, false);
   canvas.addEventListener('mousemove', handleMouseMove, false);
   canvas.addEventListener('mouseup', handleMouseUp, false);
+  canvas.addEventListener("wheel",handleMousewheel,false);
 
   // créé le renderer pour votre canvas
   renderer = new THREE.WebGLRenderer({canvas : canvas});
@@ -153,7 +164,8 @@ function init() {
   scene.add(pointLight);
 
   // objet qui va contenir les variation de la souris.
-  mouseObj = new THREE.object3D();
+  mouseObj = new THREE.Object3D();
+  depth = 0;
 
   console.log("Type 'r' to reset speed");
 }
@@ -206,37 +218,50 @@ function updateData() {
       // la plus proche à la plus lointaine de l'origine du rayon
       var first = arrayIntersect[0];
 
-      mouseObj.position.x = mouseDelta.x;
-      mouseObj.position.y = mouseDelta.y;
-
-      console.log(mouseObj.position);
-
-      // TODO: voir pour utiliser localToWorld
-
-      //mouseObj.localToWorld(mouseObj.position);
-
-      // la distance depuis l'origine
-      //console.log(first.distance);
-      // coordonnées du point intersecté; repère du monde !
-      //console.log(first.point);
       // .object : donne le noeud (i.e. l'object3D) intersecté
-
       selected = first.object;
 
+      /* Question 14
+      camera.worldToLocal(selected.position);
+
+      mouseObj.position.x = mouseDelta.x;
+      mouseObj.position.y = mouseDelta.y;
+      mouseObj.position.z = mouseDelta.z;
 
       //selected.rotation.z += 0.1;
       selected.position.x += mouseDelta.x*20;
       selected.position.y += mouseDelta.y*20;
+      selected.position.x += mouseDelta.z*20;
 
       mouseDelta.x = 0.0;
       mouseDelta.y = 0.0;
+      mouseDelta.z = 0.0;
+
+      camera.localToWorld(selected.position);
+      //*/
+
+      //* Question 15
+      var p  = selected.position;
+      var pprime;
+      var normal = camera.getWorldDirection();
+      var plane = new THREE.Plane();
+
+      plane.setFromNormalAndCoplanarPoint(normal, p);
+      pprime = ray.ray.intersectPlane(plane);
+
+      selected.position.x = pprime.x;
+      selected.position.y = pprime.y;
+      selected.position.z = pprime.z;
+      //*/
+
+      //* Question 16
+      camera.worldToLocal(selected.position);
+      selected.position.z += (depth/2);
+      depth = 0;
+      camera.localToWorld(selected.position);
+      //*/
     }
   }
-
-  // Déplacement avec la souris:
-  // utiliser plane.setFromNormalAndCoplanarPoint
-
-
 }
 
 
@@ -250,7 +275,7 @@ function loop() {
   var raf= (window.requestAnimationFrame ||
     window.mozRequestAnimationFrame ||
     webkitRequestAnimationFrame);
-  drawScene();
-  updateData();
-  raf(loop);
-}
+    drawScene();
+    updateData();
+    raf(loop);
+  }
